@@ -8,13 +8,24 @@ import (
 	"github.com/nu7hatch/gouuid"
 )
 
+// Sms available status
 const (
 	SmsPending = iota
 	SmsSent
 	SmsFailed
 )
 
+// Sms struct model
+type Sms struct {
+	UUID         *uuid.UUID `json:"uuid" bson:"_id"`
+	Phone        string     `json:"phone" bson:"phone"`
+	Message      string     `json:"message" bson:"message"`
+	Status       int        `json:"status" bson:"status"`
+	ReceivedDate time.Time  `json:"received_date" bson:"received_date"`
+}
+
 // NewSms creates and return an Sms object with automatic
+// UUID and ReceivedDate generation
 func NewSms(phone string, message string) (Sms, error) {
 	var sms Sms
 
@@ -40,15 +51,6 @@ func NewSms(phone string, message string) (Sms, error) {
 	}
 
 	return sms, nil
-}
-
-// Sms struct
-type Sms struct {
-	UUID         *uuid.UUID `json:"uuid"`
-	Phone        string     `json:"phone"`
-	Message      string     `json:"message"`
-	Status       int        `json:"status"`
-	ReceivedDate time.Time  `json:"received_date"`
 }
 
 // MarshalJSON overwrite the standard json.Marshal function to

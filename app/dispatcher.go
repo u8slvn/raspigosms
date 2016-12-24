@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/u8slvn/raspigosms/gsm"
-	"github.com/u8slvn/raspigosms/web"
+	"github.com/u8slvn/raspigosms/web/controllers"
 )
 
 //StartDispatcher function
@@ -21,7 +21,7 @@ func StartDispatcher() {
 	go func() {
 		for {
 			select {
-			case sms := <-web.SmsQueue:
+			case sms := <-controllers.SmsQueue:
 				fmt.Println("Received sms request")
 				worker.WorkerQueue <- sms
 			}
