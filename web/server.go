@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -14,6 +15,7 @@ import (
 // StartServer builds the router and then start to listen on the
 // given http address
 func StartServer(HTTPAddr string) {
+	fmt.Println("Server starting...")
 
 	//Init controllers
 	smsController := controllers.NewSmsController(getSession())

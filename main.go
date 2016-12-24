@@ -12,13 +12,9 @@ var (
 )
 
 func main() {
-	// Parse the command-line flags.
 	flag.Parse()
-
 	httpAddr := *HTTPAddr
 
-	// Start the dispatcher.
-	app.StartDispatcher()
-
+	app.StartWorking()
 	web.StartServer(httpAddr)
 }

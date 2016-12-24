@@ -6,11 +6,9 @@ import (
 
 	mgo "gopkg.in/mgo.v2"
 
+	"github.com/u8slvn/raspigosms/app"
 	"github.com/u8slvn/raspigosms/gsm"
 )
-
-// SmsQueue is a buffered channel used to send sms requests on.
-var SmsQueue = make(chan gsm.Sms, 100)
 
 type SmsController struct {
 	session *mgo.Session
@@ -28,14 +26,14 @@ func (sc *SmsController) Create(w http.ResponseWriter, r *http.Request) {
 	message := r.FormValue("message")
 
 	// Try to create the sms.
-	sms, err := gsm.NewSms(phone, message)
+	sms, err := gsm.NewSms(phone, message, gsm.SmsPending)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Push the sms onto the SmsQueue.
-	SmsQueue <- sms
+	app.SmsQueue <- sms
 	fmt.Println("Sms request queued")
 
 	smsToJSON, err := sms.MarshalJSON()

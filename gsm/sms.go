@@ -13,9 +13,10 @@ const (
 	SmsPending = iota
 	SmsSent
 	SmsFailed
+	SmsReceived
 )
 
-// Sms struct model
+// Sms model
 type Sms struct {
 	UUID         *uuid.UUID `json:"uuid" bson:"_id"`
 	Phone        string     `json:"phone" bson:"phone"`
@@ -26,7 +27,7 @@ type Sms struct {
 
 // NewSms creates and return an Sms object with automatic
 // UUID and ReceivedDate generation
-func NewSms(phone string, message string) (Sms, error) {
+func NewSms(phone string, message string, status int) (Sms, error) {
 	var sms Sms
 
 	if phone == "" {
@@ -39,14 +40,14 @@ func NewSms(phone string, message string) (Sms, error) {
 
 	u4, err := uuid.NewV4()
 	if err != nil {
-		return sms, errors.New("The sms message body is required")
+		return sms, err
 	}
 
 	sms = Sms{
 		UUID:         u4,
 		Phone:        phone,
 		Message:      message,
-		Status:       SmsPending,
+		Status:       status,
 		ReceivedDate: time.Now(),
 	}
 
