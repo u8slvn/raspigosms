@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/u8slvn/raspigosms/database"
 	"github.com/u8slvn/raspigosms/gsm"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // NewSenderWorker creates, and returns a new SenderWorker object.
@@ -23,7 +26,7 @@ type SenderWorker struct {
 	QuitChan    chan bool
 }
 
-// Start function "starts" an infinite loop wich consume the SmsQueue.
+// Start function "starts" an infinite loop which consume the SmsQueue.
 func (w SenderWorker) Start() {
 	fmt.Printf("SenderWorker starting...\n")
 	go func() {
@@ -34,6 +37,13 @@ func (w SenderWorker) Start() {
 				// Here will be the SMS sender.
 				time.Sleep(4)
 				fmt.Printf("worker: => to : %s, message : %s\n", sms.Phone, sms.Message)
+				go func() {
+					change := mgo.Change{
+						Update:    bson.M{"$set": bson.M{"status": gsm.SmsSent}},
+						ReturnNew: true,
+					}
+					database.DBConnection.DB("raspi_go_sms").C("sms").FindId(sms.UUID).Apply(change, &sms)
+				}()
 
 			case <-w.QuitChan:
 				fmt.Printf("worker stopping\n")

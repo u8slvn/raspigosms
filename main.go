@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/u8slvn/raspigosms/app"
+	"github.com/u8slvn/raspigosms/database"
 	"github.com/u8slvn/raspigosms/web"
 )
 
@@ -15,6 +16,7 @@ func main() {
 	flag.Parse()
 	httpAddr := *HTTPAddr
 
+	database.Connect()
 	app.StartWorking()
 	web.StartServer(httpAddr)
 }
