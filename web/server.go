@@ -15,24 +15,19 @@ import (
 func StartServer(HTTPAddr string) {
 	fmt.Println("Server starting...")
 
-	// Init controllers
 	smsController := controllers.NewSmsController()
 
-	// Routing
 	router := mux.NewRouter()
 
-	// Api Subrouter
 	api := router.PathPrefix("/api").Subrouter()
 
 	api.HandleFunc("/sms", smsController.Create).Methods("POST")
 	api.HandleFunc("/sms", smsController.Index).Methods("GET")
 	api.HandleFunc("/sms/{id}", smsController.Show).Methods("GET")
 
-	// Start the web server.
 	srv := &http.Server{
-		Handler: router,
-		Addr:    HTTPAddr,
-		// Enforce timeouts for servers.
+		Handler:      router,
+		Addr:         HTTPAddr,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}

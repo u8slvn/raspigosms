@@ -7,12 +7,18 @@ var SmsQueue = make(chan gsm.Sms, 100)
 
 //StartWorking function
 func StartWorking() {
-	workerList := [2]Worker{
-		NewSenderWorker(SmsQueue),
-		NewReceiverWorker(),
-	}
 
-	for _, worker := range workerList {
-		worker.Start()
-	}
+	senderWorker := NewSenderWorker()
+	senderWorker.Start()
+
+	go func() {
+		for {
+			select {
+			case sms := <-SmsQueue:
+				go func() {
+					senderWorker.WorkerQueue <- sms
+				}()
+			}
+		}
+	}()
 }

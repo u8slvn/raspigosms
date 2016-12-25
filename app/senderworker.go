@@ -11,9 +11,9 @@ import (
 )
 
 // NewSenderWorker creates, and returns a new SenderWorker object.
-func NewSenderWorker(workerQueue chan gsm.Sms) SenderWorker {
+func NewSenderWorker() SenderWorker {
 	worker := SenderWorker{
-		WorkerQueue: workerQueue,
+		WorkerQueue: make(chan gsm.Sms),
 		QuitChan:    make(chan bool),
 	}
 
@@ -42,7 +42,7 @@ func (w SenderWorker) Start() {
 						Update:    bson.M{"$set": bson.M{"status": gsm.SmsSent}},
 						ReturnNew: true,
 					}
-					database.DBConnection.DB("raspi_go_sms").C("sms").FindId(sms.UUID).Apply(change, &sms)
+					database.DBConnection.C("sms").FindId(sms.UUID).Apply(change, &sms)
 				}()
 
 			case <-w.QuitChan:
