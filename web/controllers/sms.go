@@ -32,7 +32,7 @@ func (sc *SmsController) Create(w http.ResponseWriter, r *http.Request) {
 
 	database.DBConnection.C("sms").Insert(sms)
 
-	app.SmsQueue <- sms
+	app.SmsRequestQueue <- app.NewSmsRequest(sms)
 	fmt.Println("Sms request queued")
 
 	smsJSON, err := sms.MarshalJSON()
