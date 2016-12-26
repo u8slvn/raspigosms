@@ -11,9 +11,10 @@ import (
 )
 
 // NewSenderWorker creates, and returns a new SenderWorker object.
-func NewSenderWorker() SenderWorker {
+func NewSenderWorker(modem *gsm.Modem) SenderWorker {
 	worker := SenderWorker{
 		WorkerQueue: make(chan SmsRequest),
+		Modem:       modem,
 		QuitChan:    make(chan bool),
 	}
 
@@ -23,6 +24,7 @@ func NewSenderWorker() SenderWorker {
 // SenderWorker struct
 type SenderWorker struct {
 	WorkerQueue chan SmsRequest
+	Modem       *gsm.Modem
 	QuitChan    chan bool
 }
 
@@ -33,20 +35,30 @@ func (w SenderWorker) Start() {
 		for {
 			select {
 			case smsr := <-w.WorkerQueue:
-				fmt.Printf("worker: Received sms, for %s\n", smsr.Sms.Phone)
-				// Here will be the SMS sender.
-				time.Sleep(4)
 				fmt.Printf("worker: => to : %s, message : %s\n", smsr.Sms.Phone, smsr.Sms.Message)
 				go func() {
+					time.Sleep(1000 * time.Millisecond)
+					status := gsm.SmsFailed
+					err := w.Modem.SendSms(smsr.Sms)
+					if err == nil {
+						smsr.RemainingAttempts = 0
+						status = gsm.SmsSent
+						fmt.Printf("Success\n")
+					} else {
+						smsr.RemainingAttempts--
+						fmt.Printf("Failed\n")
+					}
+
+					if smsr.RemainingAttempts > 0 {
+						SmsRequestQueue <- smsr
+						return
+					}
+
 					change := mgo.Change{
-						Update:    bson.M{"$set": bson.M{"status": gsm.SmsSent}},
+						Update:    bson.M{"$set": bson.M{"status": status}},
 						ReturnNew: true,
 					}
 					database.DBConnection.C("sms").FindId(smsr.Sms.UUID).Apply(change, &smsr.Sms)
-					smsr.RemainingAttempts = 0
-					if smsr.RemainingAttempts != 0 {
-						SmsRequestQueue <- smsr
-					}
 				}()
 			case <-w.QuitChan:
 				fmt.Printf("worker stopping\n")

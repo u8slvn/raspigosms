@@ -11,7 +11,7 @@ type SmsRequest struct {
 // NewSmsRequest Build and return a new SmsRequest.
 func NewSmsRequest(sms gsm.Sms) SmsRequest {
 	return SmsRequest{
-		RemainingAttempts: 3, // todo : move this var in config
+		RemainingAttempts: 2, // todo : move this var in config
 		Sms:               sms,
 	}
 }
