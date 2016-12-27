@@ -35,12 +35,11 @@ func (sc *SmsController) Create(w http.ResponseWriter, r *http.Request) {
 	app.SmsRequestQueue <- app.NewSmsRequest(sms)
 	fmt.Println("Sms request queued")
 
-	links := make(map[string]string)
+	responseJSON := NewDataJSONResponse([]interface{}{&sms})
 	if selfPath, err := router.Get("sms_show").URLPath("id", sms.UUID.String()); err == nil {
-		links["self"] = selfPath.Path
+		responseJSON.AddLink("self", selfPath.Path)
 	}
-
-	ResponseJSON(w, DataResponse{[]interface{}{&sms}, links}, 200)
+	ResponseJSON(w, responseJSON, 200)
 	return
 }
 
@@ -61,12 +60,11 @@ func (sc *SmsController) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	links := make(map[string]string)
+	responseJSON := NewDataJSONResponse([]interface{}{&sms})
 	if selfPath, err := router.Get("sms_show").URLPath("id", sms.UUID.String()); err == nil {
-		links["self"] = selfPath.Path
+		responseJSON.AddLink("self", selfPath.Path)
 	}
-
-	ResponseJSON(w, DataResponse{[]interface{}{&sms}, links}, 200)
+	ResponseJSON(w, responseJSON, 200)
 	return
 }
 

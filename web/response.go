@@ -5,13 +5,34 @@ import (
 	"net/http"
 )
 
-type DataResponse struct {
+type DataJSONResponse struct {
 	Data  interface{}       `json:"data"`
-	Links map[string]string `json:"links"`
+	Links map[string]string `json:"links,omitempty"`
 }
 
-type ErrorResponse struct {
-	Errors APIError `json:"errors"`
+func NewDataJSONResponse(data interface{}) DataJSONResponse {
+	return DataJSONResponse{
+		Data:  data,
+		Links: make(map[string]string),
+	}
+}
+
+func (d *DataJSONResponse) AddLink(key string, value string) {
+	d.Links[key] = value
+}
+
+type ErrorJSONResponse struct {
+	Errors []APIError `json:"errors"`
+}
+
+func NewErrorJSONResponse() ErrorJSONResponse {
+	return ErrorJSONResponse{
+		Errors: []APIError{},
+	}
+}
+
+func (e *ErrorJSONResponse) AddError(apiError APIError) {
+	e.Errors = append(e.Errors, apiError)
 }
 
 type APIError struct {
@@ -28,10 +49,7 @@ func ResponseJSON(w http.ResponseWriter, data interface{}, code int) {
 }
 
 func ResponseJSONError(w http.ResponseWriter, message string, code int) {
-	apiError := APIError{
-		Code:    code,
-		Message: message,
-	}
-
-	ResponseJSON(w, ErrorResponse{apiError}, code)
+	responseError := NewErrorJSONResponse()
+	responseError.AddError(APIError{code, message})
+	ResponseJSON(w, responseError, code)
 }
