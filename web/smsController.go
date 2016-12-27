@@ -1,4 +1,4 @@
-package controllers
+package web
 
 import (
 	"fmt"
@@ -24,9 +24,9 @@ func (sc *SmsController) Create(w http.ResponseWriter, r *http.Request) {
 	phone := r.FormValue("phone")
 	message := r.FormValue("message")
 
-	sms, err := gsm.NewSms(phone, message, gsm.SmsPending)
+	sms, err := gsm.NewSms(phone, message, gsm.SmsStatusPending)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		ResponseJSONError(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -35,14 +35,12 @@ func (sc *SmsController) Create(w http.ResponseWriter, r *http.Request) {
 	app.SmsRequestQueue <- app.NewSmsRequest(sms)
 	fmt.Println("Sms request queued")
 
-	smsJSON, err := sms.MarshalJSON()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	links := make(map[string]string)
+	if selfPath, err := router.Get("sms_show").URLPath("id", sms.UUID.String()); err == nil {
+		links["self"] = selfPath.Path
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	w.Write(smsJSON)
+
+	ResponseJSON(w, DataResponse{[]interface{}{&sms}, links}, 200)
 	return
 }
 
@@ -53,24 +51,22 @@ func (sc *SmsController) Show(w http.ResponseWriter, r *http.Request) {
 
 	UUID, err := uuid.ParseHex(id)
 	if err != nil {
-		http.Error(w, "Malformed uuid.", http.StatusBadRequest)
+		ResponseJSONError(w, "Malformed uuid.", http.StatusBadRequest)
 		return
 	}
 
 	sms := gsm.Sms{}
 	if err := database.DBConnection.C("sms").FindId(UUID).One(&sms); err != nil {
-		http.Error(w, "Sms not found.", http.StatusNotFound)
+		ResponseJSONError(w, "Sms not found.", http.StatusNotFound)
 		return
 	}
 
-	smsJSON, err := sms.MarshalJSON()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotImplemented)
-		return
+	links := make(map[string]string)
+	if selfPath, err := router.Get("sms_show").URLPath("id", sms.UUID.String()); err == nil {
+		links["self"] = selfPath.Path
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(smsJSON)
+
+	ResponseJSON(w, DataResponse{[]interface{}{&sms}, links}, 200)
 	return
 }
 

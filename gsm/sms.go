@@ -10,10 +10,10 @@ import (
 
 // Sms available status
 const (
-	SmsPending = iota
-	SmsSent
-	SmsFailed
-	SmsReceived
+	SmsStatusPending = iota
+	SmsStatusSent
+	SmsStatusFailed
+	SmsStatusReceived
 )
 
 // Sms model

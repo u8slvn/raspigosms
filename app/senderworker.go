@@ -38,11 +38,11 @@ func (w SenderWorker) Start() {
 				fmt.Printf("worker: => to : %s, message : %s\n", smsr.Sms.Phone, smsr.Sms.Message)
 				go func() {
 					time.Sleep(1000 * time.Millisecond)
-					status := gsm.SmsFailed
+					status := gsm.SmsStatusFailed
 					err := w.Modem.SendSms(smsr.Sms)
 					if err == nil {
 						smsr.RemainingAttempts = 0
-						status = gsm.SmsSent
+						status = gsm.SmsStatusSent
 						fmt.Printf("Success\n")
 					} else {
 						smsr.RemainingAttempts--

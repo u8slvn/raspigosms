@@ -7,23 +7,24 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/u8slvn/raspigosms/web/controllers"
 )
+
+var router *mux.Router
 
 // StartServer builds the router and then start to listen on the
 // given http address.
 func StartServer(HTTPAddr string) {
 	fmt.Println("Server starting...")
 
-	smsController := controllers.NewSmsController()
+	smsController := NewSmsController()
 
-	router := mux.NewRouter()
+	router = mux.NewRouter()
 
 	api := router.PathPrefix("/api").Subrouter()
 
 	api.HandleFunc("/sms", smsController.Create).Methods("POST")
 	api.HandleFunc("/sms", smsController.Index).Methods("GET")
-	api.HandleFunc("/sms/{id}", smsController.Show).Methods("GET")
+	api.HandleFunc("/sms/{id}", smsController.Show).Methods("GET").Name("sms_show")
 
 	srv := &http.Server{
 		Handler:      router,
