@@ -38,6 +38,10 @@ func NewSms(phone string, message string, status int) (Sms, error) {
 		return sms, errors.New("The sms message body is required")
 	}
 
+	if !CheckPhoneFormat(phone) {
+		return sms, errors.New("Invalid phone number, the phone number must compliant the E.164 format")
+	}
+
 	u4, err := uuid.NewV4()
 	if err != nil {
 		return sms, err
