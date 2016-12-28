@@ -7,7 +7,9 @@ var SmsRequestQueue = make(chan SmsRequest, 100)
 
 //StartWorking function
 func StartWorking() {
-	modem := gsm.NewModem("test", 1)
+	LoadConfig()
+
+	modem := gsm.NewModem(Conf.Modem.Serial, Conf.Modem.Baud)
 	modem.Connect()
 
 	senderWorker := NewSenderWorker(&modem)

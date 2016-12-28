@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/u8slvn/raspigosms/app"
 )
 
 var router *mux.Router
 
 // StartServer builds the router and then start to listen on the
 // given http address.
-func StartServer(HTTPAddr string) {
+func StartServer() {
 	fmt.Println("Server starting...")
 
 	smsController := NewSmsController()
@@ -28,7 +29,7 @@ func StartServer(HTTPAddr string) {
 
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         HTTPAddr,
+		Addr:         app.Conf.HTTPAddr,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
