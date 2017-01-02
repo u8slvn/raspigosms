@@ -1,4 +1,4 @@
-package web
+package main
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/u8slvn/raspigosms/app"
+	"github.com/u8slvn/raspigosms/raspigosms"
 )
 
 var router *mux.Router
@@ -17,19 +17,19 @@ var router *mux.Router
 func StartServer() {
 	fmt.Println("Server starting...")
 
-	smsController := NewSmsController()
+	smsHandler := newSmsHandler()
 
 	router = mux.NewRouter()
 
 	api := router.PathPrefix("/api").Subrouter()
 
-	api.HandleFunc("/sms", smsController.Create).Methods("POST")
-	api.HandleFunc("/sms", smsController.Index).Methods("GET")
-	api.HandleFunc("/sms/{id}", smsController.Show).Methods("GET").Name("sms_show")
+	api.HandleFunc("/sms", smsHandler.create).Methods("POST")
+	api.HandleFunc("/sms", smsHandler.index).Methods("GET")
+	api.HandleFunc("/sms/{id}", smsHandler.show).Methods("GET").Name("sms_show")
 
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         app.Conf.HTTPAddr,
+		Addr:         raspigosms.Conf.HTTPAddr,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}

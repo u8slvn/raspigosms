@@ -1,4 +1,4 @@
-package app
+package raspigosms
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"github.com/u8slvn/raspigosms/gsm"
 )
 
+// Conf global
 var Conf configuration
 
 type configuration struct {
@@ -15,7 +16,7 @@ type configuration struct {
 	Modem             gsm.Modem
 }
 
-func LoadConfig() {
+func loadConfig() {
 	file, _ := os.Open("config.json")
 	decoder := json.NewDecoder(file)
 	Conf = configuration{}

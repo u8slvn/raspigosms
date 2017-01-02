@@ -1,4 +1,4 @@
-package database
+package raspigosms
 
 import (
 	"fmt"
@@ -10,11 +10,11 @@ import (
 var DBConnection *mgo.Database
 
 // Connect to local mongo.
-func Connect() {
-	Connection, err := mgo.Dial("mongodb://localhost")
+func databaseConnect() {
+	connection, err := mgo.Dial("mongodb://localhost")
 	if err != nil {
 		panic(err)
 	}
-	DBConnection = Connection.DB("raspi_go_sms")
+	DBConnection = connection.DB("raspi_go_sms")
 	fmt.Println("Database connected.")
 }

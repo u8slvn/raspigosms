@@ -1,4 +1,4 @@
-package app
+package raspigosms
 
 import "github.com/u8slvn/raspigosms/gsm"
 

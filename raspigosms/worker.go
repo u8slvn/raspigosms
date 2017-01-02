@@ -1,10 +1,10 @@
-package app
+package raspigosms
 
 import (
 	"fmt"
-	"time"
 
-	"github.com/u8slvn/raspigosms/database"
+	"sync"
+
 	"github.com/u8slvn/raspigosms/gsm"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -32,12 +32,13 @@ type SenderWorker struct {
 func (w SenderWorker) Start() {
 	fmt.Printf("SenderWorker starting...\n")
 	go func() {
+		var wg sync.WaitGroup
 		for {
 			select {
 			case smsr := <-w.WorkerQueue:
 				fmt.Printf("worker: => to : %s, message : %s\n", smsr.Sms.Phone, smsr.Sms.Message)
+				wg.Add(1)
 				go func() {
-					time.Sleep(1000 * time.Millisecond)
 					status := gsm.SmsStatusFailed
 					err := w.Modem.SendSms(smsr.Sms)
 					if err == nil {
@@ -58,12 +59,14 @@ func (w SenderWorker) Start() {
 						Update:    bson.M{"$set": bson.M{"status": status}},
 						ReturnNew: true,
 					}
-					database.DBConnection.C("sms").FindId(smsr.Sms.UUID).Apply(change, &smsr.Sms)
+					DBConnection.C("sms").FindId(smsr.Sms.UUID).Apply(change, &smsr.Sms)
+					defer wg.Done()
 				}()
 			case <-w.QuitChan:
 				fmt.Printf("worker stopping\n")
 				return
 			}
+			wg.Wait()
 		}
 	}()
 }

@@ -2,7 +2,7 @@
     "HTTPAddr": "127.0.0.1:8000",
     "RemainingAttempts": 2,
     "Modem": {
-        "Serial": "1",
-        "Baud": 2
+        "Serial": "/dev/ttyUSB0",
+        "Baud": 115200
     }
 }
