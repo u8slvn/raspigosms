@@ -1,29 +1,27 @@
 package raspigosms
 
 import "github.com/u8slvn/raspigosms/gsm"
-import "fmt"
 
 // SmsRequestQueue is a buffered channel used to send sms requests on.
-var SmsRequestQueue = make(chan SmsRequest, 100)
+var SmsRequestQueue = make(chan smsRequest, 100)
 
-//Start function
+//Start raspigosms
 func Start() {
-	databaseConnect()
+	dbConnect()
 	loadConfig()
 
 	modem := gsm.NewModem(Conf.Modem.Serial, Conf.Modem.Baud)
-	fmt.Println(modem)
 	modem.Connect()
 
-	senderWorker := NewSenderWorker(modem)
-	senderWorker.Start()
+	sw := newSenderWorker(modem)
+	sw.Start()
 
 	go func() {
 		for {
 			select {
 			case smsr := <-SmsRequestQueue:
 				go func() {
-					senderWorker.WorkerQueue <- smsr
+					sw.WorkerQueue <- smsr
 				}()
 			}
 		}

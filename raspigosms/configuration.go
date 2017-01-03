@@ -8,7 +8,7 @@ import (
 )
 
 // Conf global
-var Conf configuration
+var Conf *configuration
 
 type configuration struct {
 	HTTPAddr          string
@@ -19,8 +19,8 @@ type configuration struct {
 func loadConfig() {
 	file, _ := os.Open("config.json")
 	decoder := json.NewDecoder(file)
-	Conf = configuration{}
-	err := decoder.Decode(&Conf)
+	Conf = &configuration{}
+	err := decoder.Decode(Conf)
 	if err != nil {
 		panic(err)
 	}

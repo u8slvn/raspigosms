@@ -7,14 +7,13 @@ import (
 )
 
 // DBConnection is the main connection handle for the database.
-var DBConnection *mgo.Database
+var db *mgo.Database
 
-// Connect to local mongo.
-func databaseConnect() {
+func dbConnect() {
 	connection, err := mgo.Dial("mongodb://localhost")
 	if err != nil {
 		panic(err)
 	}
-	DBConnection = connection.DB("raspi_go_sms")
+	db = connection.DB("raspi_go_sms")
 	fmt.Println("Database connected.")
 }

@@ -3,17 +3,20 @@ package raspigosms
 import (
 	"fmt"
 
-	"sync"
-
 	"github.com/u8slvn/raspigosms/gsm"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-// NewSenderWorker creates, and returns a new SenderWorker object.
-func NewSenderWorker(modem *gsm.Modem) SenderWorker {
-	worker := SenderWorker{
-		WorkerQueue: make(chan SmsRequest),
+type senderWorker struct {
+	WorkerQueue chan smsRequest
+	Modem       *gsm.Modem
+	QuitChan    chan bool
+}
+
+func newSenderWorker(modem *gsm.Modem) senderWorker {
+	worker := senderWorker{
+		WorkerQueue: make(chan smsRequest),
 		Modem:       modem,
 		QuitChan:    make(chan bool),
 	}
@@ -21,36 +24,27 @@ func NewSenderWorker(modem *gsm.Modem) SenderWorker {
 	return worker
 }
 
-// SenderWorker struct
-type SenderWorker struct {
-	WorkerQueue chan SmsRequest
-	Modem       *gsm.Modem
-	QuitChan    chan bool
-}
-
 // Start function "starts" an infinite loop which consume the SmsQueue.
-func (w SenderWorker) Start() {
+func (w senderWorker) Start() {
 	fmt.Printf("SenderWorker starting...\n")
 	go func() {
-		var wg sync.WaitGroup
 		for {
 			select {
 			case smsr := <-w.WorkerQueue:
-				fmt.Printf("worker: => to : %s, message : %s\n", smsr.Sms.Phone, smsr.Sms.Message)
-				wg.Add(1)
+				fmt.Printf("worker: => to : %s, message : %s\n", smsr.sms.Phone, smsr.sms.Message)
 				go func() {
 					status := gsm.SmsStatusFailed
-					err := w.Modem.SendSms(smsr.Sms)
+					err := w.Modem.SendSms(smsr.sms)
 					if err == nil {
-						smsr.RemainingAttempts = 0
+						smsr.remainingAttempts = 0
 						status = gsm.SmsStatusSent
 						fmt.Printf("Success\n")
 					} else {
-						smsr.RemainingAttempts--
+						smsr.remainingAttempts--
 						fmt.Printf("Failed\n")
 					}
 
-					if smsr.RemainingAttempts > 0 {
+					if smsr.remainingAttempts > 0 {
 						SmsRequestQueue <- smsr
 						return
 					}
@@ -59,21 +53,18 @@ func (w SenderWorker) Start() {
 						Update:    bson.M{"$set": bson.M{"status": status}},
 						ReturnNew: true,
 					}
-					DBConnection.C("sms").FindId(smsr.Sms.UUID).Apply(change, &smsr.Sms)
-					defer wg.Done()
+					db.C("sms").FindId(smsr.sms.UUID).Apply(change, &smsr.sms)
 				}()
 			case <-w.QuitChan:
 				fmt.Printf("worker stopping\n")
 				return
 			}
-			wg.Wait()
 		}
 	}()
 }
 
-// Stop the worker to stop listening for Sms requests.
 // The worker will only stop *after* it has finished its work.
-func (w SenderWorker) Stop() {
+func (w senderWorker) Stop() {
 	go func() {
 		w.QuitChan <- true
 	}()
