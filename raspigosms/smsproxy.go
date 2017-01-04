@@ -2,7 +2,7 @@ package raspigosms
 
 import (
 	uuid "github.com/nu7hatch/gouuid"
-	"github.com/u8slvn/raspigosms/gsm"
+	"github.com/u8slvn/raspigosms/raspigosms/gsm"
 )
 
 type smsRequest struct {
@@ -26,7 +26,7 @@ func SubmitSms(phone string, message string) (gsm.Sms, error) {
 		sms:               sms,
 	}
 
-	SmsRequestQueue <- smsr
+	smsRequestQueue <- smsr
 	return sms, nil
 }
 

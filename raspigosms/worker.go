@@ -3,7 +3,8 @@ package raspigosms
 import (
 	"fmt"
 
-	"github.com/u8slvn/raspigosms/gsm"
+	"github.com/u8slvn/raspigosms/raspigosms/gsm"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -45,7 +46,7 @@ func (w senderWorker) Start() {
 					}
 
 					if smsr.remainingAttempts > 0 {
-						SmsRequestQueue <- smsr
+						smsRequestQueue <- smsr
 						return
 					}
 

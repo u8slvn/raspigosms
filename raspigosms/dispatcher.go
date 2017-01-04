@@ -1,9 +1,9 @@
 package raspigosms
 
-import "github.com/u8slvn/raspigosms/gsm"
+import "github.com/u8slvn/raspigosms/raspigosms/gsm"
 
 // SmsRequestQueue is a buffered channel used to send sms requests on.
-var SmsRequestQueue = make(chan smsRequest, 100)
+var smsRequestQueue = make(chan smsRequest, 100)
 
 //Start raspigosms
 func Start() {
@@ -19,7 +19,7 @@ func Start() {
 	go func() {
 		for {
 			select {
-			case smsr := <-SmsRequestQueue:
+			case smsr := <-smsRequestQueue:
 				go func() {
 					sw.WorkerQueue <- smsr
 				}()

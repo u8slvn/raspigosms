@@ -34,14 +34,12 @@ func NewSms(phone string, message string, status int) (Sms, error) {
 	if phone == "" {
 		return sms, errors.New("The phone number is required")
 	}
-
 	if message == "" {
 		return sms, errors.New("The sms message body is required")
 	}
-
-	// if !checkPhoneFormat(phone) {
-	// 	return sms, errors.New("Invalid phone number, the phone number must compliant the E.164 format")
-	// }
+	if !checkPhoneFormat(phone) {
+		return sms, errors.New("Invalid phone number, the phone number must compliant the E.164 format")
+	}
 
 	u4, err := uuid.NewV4()
 	if err != nil {
@@ -72,7 +70,7 @@ func (sms *Sms) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// CheckPhoneFormat test if the given string match with the E.164 phone format
+// checkPhoneFormat test if the given string match with the E.164 phone format
 // Todo : maybe use a more strict lib
 func checkPhoneFormat(phn string) bool {
 	match, _ := regexp.MatchString("^\\+?[1-9]\\d{1,14}$", phn)

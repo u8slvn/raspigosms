@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/u8slvn/raspigosms/gsm"
+	"github.com/u8slvn/raspigosms/raspigosms/gsm"
 )
 
 // Conf global
